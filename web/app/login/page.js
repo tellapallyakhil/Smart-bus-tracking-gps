@@ -14,47 +14,58 @@ export default function Login() {
         e.preventDefault();
         setLoading(true);
 
-        // In a real app, role should be fetched from DB/Profile.
-        // Here we implicitly trust the selection for demonstration + Auth check
-        const { data, error } = await supabase.auth.signInWithPassword({
-            email,
-            password,
-        });
+        try {
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email,
+                password,
+            });
 
-        if (error) {
-            alert(error.message);
-            setLoading(false);
-        } else {
-            // Store intended role
+            if (error) throw error;
+
+            // Login Success
             localStorage.setItem('user_role', role);
 
-            // Simple "Hardcoded" Admin Check for demo purposes
-            // In production, this must be done via RLS policies or a 'profiles' table.
+            // Navigate based on role
             if (role === 'admin') {
-                if (email.includes('admin')) {
-                    router.push('/admin');
-                } else {
-                    alert("Training Mode: You selected Admin, but your email doesn't look like an admin email. Proceeding anyway for demo.");
-                    router.push('/admin');
-                }
+                router.push('/admin');
+            } else if (role === 'driver') {
+                router.push('/driver');
+            } else {
+                router.push('/');
             }
-            else if (role === 'driver') router.push('/driver');
-            else router.push('/');
+
+        } catch (error) {
+            alert(error.message || "Login failed");
+        } finally {
+            setLoading(false);
         }
     };
 
     const handleSignUp = async () => {
         setLoading(true);
-        const { data, error } = await supabase.auth.signUp({
-            email,
-            password,
-        });
-        if (error) {
-            alert(error.message);
-        } else {
-            alert("Check your email for confirmation!");
+        try {
+            const { data, error } = await supabase.auth.signUp({
+                email,
+                password,
+            });
+
+            if (error) throw error;
+
+            if (data?.session) {
+                // Auto-login if email confirmation is disabled on Supabase
+                localStorage.setItem('user_role', role);
+                if (role === 'admin') router.push('/admin');
+                else if (role === 'driver') router.push('/driver');
+                else router.push('/');
+            } else {
+                // Email confirmation required
+                alert("Registration Successful! \n\nPlease check your email (including spam) to confirm your account before logging in.");
+            }
+        } catch (error) {
+            alert(error.message || "Registration failed");
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     };
 
     return (
