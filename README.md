@@ -1,100 +1,188 @@
-# Smart Bus Tracking (Node.js + Python ML + Next.js)
+# 🚌 Smart Bus Tracking System
 
-A real-time bus tracking system built with a **Node.js Socket Server**, a **Python ML Backend** for ETA predictions, and a **Next.js Frontend**.
+A real-time GPS bus tracking application with live map, driver app, and admin dashboard.
 
-## 🚀 Architecture
-- **Socket Server (`/socket-server`)**: 
-  - Runs on Port `4000`.
-  - Handles real-time websocket connections to broadcast GPS updates.
-- **ML Backend (`/backend`)**:
-  - Runs on Port `8000`.
-  - Built with **FastAPI**.
-  - Uses **Random Forest** to predict Bus ETAs based on traffic history.
-- **Frontend (`/web`)**: 
-  - Runs on Port `3000`.
-  - Built with **Next.js 14**.
-  - Displays live buses on a map with a Sci-fi Glassmorphism UI.
+![Demo](https://img.shields.io/badge/Status-Working-brightgreen)
+![Node](https://img.shields.io/badge/Node.js-18+-green)
+![Python](https://img.shields.io/badge/Python-3.10+-blue)
 
-## 🛠️ Installation & Setup
+---
 
-### 1. Prerequisites
-- **Node.js** (v18 or higher)
-- **Python** (v3.10 or higher)
+## 📋 What You Need Before Starting
 
-### 2. Backend Setup (One-time)
-This application uses a Python backend for ETA predictions. You must set up the virtual environment and train the model first.
+Make sure you have these installed on your computer:
 
-#### Windows
-```powershell
+| Software | Download Link |
+|----------|---------------|
+| **Node.js** (v18 or higher) | [Download Node.js](https://nodejs.org/) |
+| **Python** (v3.10 or higher) | [Download Python](https://www.python.org/downloads/) |
+| **Git** | [Download Git](https://git-scm.com/) |
+
+---
+
+## � Installation (Step-by-Step)
+
+### Step 1: Download the Project
+
+Open your terminal (Command Prompt or PowerShell) and run:
+
+```bash
+git clone https://github.com/tellapallyakhil/Smart-bus-tracking-gps.git
+cd Smart-bus-tracking-gps
+```
+
+---
+
+### Step 2: Setup Python Backend
+
+```bash
 # Create virtual environment
 python -m venv venv
 
-# Activate virtual environment
+# Activate it (Windows)
 .\venv\Scripts\activate
 
-# Install dependencies
+# Install Python packages
 pip install -r requirements.txt
 
-# Generate Synthetic Training Data
+# Generate training data
 python backend/generate_data.py
 
-# Train the ML Model
+# Train the ML model
 python backend/train_model.py
 ```
 
-#### Mac/Linux
-```bash
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-python3 backend/generate_data.py
-python3 backend/train_model.py
-```
+---
 
-### 3. Install Node.js Dependencies
-Install libraries for both the socket server and web app.
+### Step 3: Setup Socket Server
 
 ```bash
-# Socket Server
 cd socket-server
 npm install
+cd ..
+```
 
-# Web Frontend
-cd ../web
+---
+
+### Step 4: Setup Web App
+
+```bash
+cd web
+npm install
+cd ..
+```
+
+---
+
+## ▶️ How to Run
+
+### Option A: Quick Start (Windows Only)
+
+Just double-click **`start_app.bat`** file.
+
+### Option B: Manual Start
+
+Open **3 separate terminals** and run:
+
+**Terminal 1 - Socket Server:**
+```bash
+cd socket-server
+npm run dev
+```
+
+**Terminal 2 - Python Backend:**
+```bash
+.\venv\Scripts\activate
+python -m uvicorn backend.api:app --reload --port 8000
+```
+
+**Terminal 3 - Web App:**
+```bash
+cd web
+npm run dev
+```
+
+---
+
+## 🌐 Open the App
+
+After starting, open these links in your browser:
+
+| Page | URL |
+|------|-----|
+| **Passenger Dashboard** | http://localhost:3000 |
+| **Driver App** | http://localhost:3000/driver |
+| **Admin Panel** | http://localhost:3000/admin |
+
+---
+
+## 🔐 Login Instructions
+
+1. Go to http://localhost:3000/login
+2. Select your role (User / Driver / Admin)
+3. Enter any email and password
+4. Click **Register** (first time) or **Login** (returning user)
+
+---
+
+## ✨ Features
+
+- 🗺️ **Live Map** - See buses moving in real-time
+- 📍 **GPS Tracking** - Drivers share their location
+- ⏱️ **ETA Prediction** - AI predicts bus arrival times
+- 🔔 **Geofence Alerts** - Notifications when bus arrives at stops
+- 👨‍✈️ **Driver Dashboard** - Easy-to-use driver interface
+- 🛡️ **Admin Panel** - Monitor all buses and alerts
+
+---
+
+## 🛠️ Troubleshooting
+
+### Error: "CSS chunk loading failed"
+```bash
+cd web
+Remove-Item -Recurse -Force .next
+npm run dev
+```
+
+### Error: "Module not found"
+```bash
+cd web
 npm install
 ```
 
-## 🚀 How to Run
+### Error: "Python/pip not found"
+Make sure Python is installed and added to PATH.
 
-### Option 1: One-Click (Windows Only)
-Simply double-click **`start_app.bat`**. 
-This script automatically detects your Python environment and launches all three services (Backend, Socket Server, Frontend).
+---
 
-### Option 2: Manual Start
-Open 3 separate terminals:
+## 📁 Project Structure
 
-1. **Socket Server**:
-   ```bash
-   cd socket-server
-   npm run dev
-   ```
+```
+Smart-bus-tracking-gps/
+├── backend/          # Python ML API
+├── socket-server/    # Real-time WebSocket server
+├── web/              # Next.js frontend
+├── requirements.txt  # Python dependencies
+├── start_app.bat     # Windows quick-start script
+└── README.md         # This file
+```
 
-2. **ML Backend**:
-   ```bash
-   # Activate venv first!
-   .\venv\Scripts\activate 
-   uvicorn backend.api:app --reload --port 8000
-   ```
+---
 
-3. **Frontend**:
-   ```bash
-   cd web
-   npm run dev
-   ```
+## 👨‍💻 Tech Stack
 
-## 📱 Usage
-- **Passenger Dashboard**: Open `http://localhost:3000`. Setup will show live moving bus markers.
-- **Driver App**: Open `http://localhost:3000/driver`. 
-  - Login (any credentials work for demo).
-  - Select "Secunderabad - Charminar" route.
-  - Click **Start Tracking** to simulate a bus.
+- **Frontend**: Next.js 14, React, Leaflet Maps
+- **Backend**: Node.js, Socket.IO, FastAPI
+- **ML**: Python, Scikit-learn (Random Forest)
+- **Auth**: Supabase
+
+---
+
+## 📞 Support
+
+If you face any issues, create an issue on GitHub or contact the developer.
+
+---
+
+Made with ❤️ by Akhil Tellapally
