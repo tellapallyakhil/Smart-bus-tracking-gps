@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import io from 'socket.io-client';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
+import { useRef } from 'react';
 
 let socket;
 
@@ -28,6 +29,7 @@ export default function DriverApp() {
     const [route, setRoute] = useState('ROUTE_101');
     const [status, setStatus] = useState('Offline');
     const [isTracking, setIsTracking] = useState(false);
+    const watchId = useRef(null);
 
     // Manual overrides
     const [manualMode, setManualMode] = useState(false);
@@ -56,8 +58,50 @@ export default function DriverApp() {
         };
         checkUser();
 
-        return () => socket.disconnect();
+        return () => {
+            socket.disconnect();
+            if (watchId.current !== null) {
+                navigator.geolocation.clearWatch(watchId.current);
+            }
+        };
     }, []);
+
+    // Reactive update for manual mode
+    useEffect(() => {
+        if (isTracking && manualMode) {
+            updateLocation(manualLat, manualLon, 40);
+        }
+    }, [manualLat, manualLon, occupancy, isTracking, manualMode]);
+
+    // Handle switching modes while tracking is active
+    useEffect(() => {
+        if (!isTracking) return;
+
+        if (manualMode) {
+            // Stopped GPS, switched to Manual
+            if (watchId.current !== null) {
+                navigator.geolocation.clearWatch(watchId.current);
+                watchId.current = null;
+            }
+            setStatus('Tracking (Manual)...');
+        } else {
+            // Switched to GPS
+            setStatus('Tracking (GPS)...');
+            if (watchId.current === null) {
+                if (!navigator.geolocation) {
+                    alert("GPS not supported");
+                    return;
+                }
+                watchId.current = navigator.geolocation.watchPosition((pos) => {
+                    const { latitude, longitude, speed } = pos.coords;
+                    updateLocation(latitude, longitude, speed);
+                }, (err) => {
+                    console.error(err);
+                    setStatus("GPS Error");
+                }, { enableHighAccuracy: true });
+            }
+        }
+    }, [manualMode]);
 
     const handleLogin = () => {
         if (!busId) return;
@@ -70,6 +114,10 @@ export default function DriverApp() {
         if (isTracking) {
             setIsTracking(false);
             setStatus('Paused');
+            if (watchId.current !== null) {
+                navigator.geolocation.clearWatch(watchId.current);
+                watchId.current = null;
+            }
         } else {
             setIsTracking(true);
             setStatus(manualMode ? 'Tracking (Manual)...' : 'Tracking (GPS)...');
@@ -79,7 +127,7 @@ export default function DriverApp() {
                     alert("GPS not supported");
                     return;
                 }
-                navigator.geolocation.watchPosition((pos) => {
+                watchId.current = navigator.geolocation.watchPosition((pos) => {
                     const { latitude, longitude, speed } = pos.coords;
                     updateLocation(latitude, longitude, speed);
                 }, (err) => {
@@ -94,9 +142,9 @@ export default function DriverApp() {
 
     const updateLocation = (lat, lon, speed) => {
         socket.emit('driver_location', {
-            lat: lat,
-            lon: lon,
-            speed: speed ? (speed * 3.6) : 0,
+            lat: parseFloat(lat),
+            lon: parseFloat(lon),
+            speed: speed ? (parseFloat(speed) * 3.6) : 0,
             occupancy: occupancy
         });
     };
