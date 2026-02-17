@@ -27,6 +27,7 @@
   --border-color: rgba(255, 140, 66, 0.2);
   --glow-primary: rgba(255, 140, 66, 0.5);
   --glow-blue: rgba(76, 201, 240, 0.4);
+  color-scheme: dark;
 }
 
 * {
@@ -214,6 +215,11 @@ input {
   outline: none;
   width: 100%;
   margin-bottom: 15px;
+}
+
+option {
+  background: #1a1c24;
+  color: #ffffff;
 }
 
 select:focus,

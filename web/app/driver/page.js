@@ -193,7 +193,7 @@ export default function DriverApp() {
                     {manualMode && (
                         <div>
                             <label style={{ fontSize: 12, color: '#aaa', marginTop: 10, display: 'block' }}>Jump to Known Stop:</label>
-                            <select value={selectedStopName} onChange={handleStopSelect} style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid #555' }}>
+                            <select value={selectedStopName} onChange={handleStopSelect}>
                                 <option value="">-- Select a Stop --</option>
                                 {HYD_STOPS.map(s => (
                                     <option key={s.name} value={s.name}>{s.name}</option>
