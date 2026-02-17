@@ -114,6 +114,11 @@ io.on('connection', (socket) => {
         socket.emit('bus_update', Object.values(activeBuses));
     });
 
+    socket.on('panic_signal', (data) => {
+        console.log(`PANIC SIGNAL from ${data.userId} at ${data.location}`);
+        io.emit('emergency_alert', data);
+    });
+
     socket.on('disconnect', () => {
         console.log('User disconnected:', socket.id);
         if (activeBuses[socket.id]) {

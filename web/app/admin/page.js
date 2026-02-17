@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import io from 'socket.io-client';
 import { supabase } from '@/lib/supabase';
 import dynamic from 'next/dynamic';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 // Dynamic Import for Map (Client Side Only)
 const LeafletMap = dynamic(() => import('../../components/LeafletMap'), {
@@ -36,6 +37,7 @@ export default function AdminDashboard() {
     const [user, setUser] = useState(null);
     const [authLoading, setAuthLoading] = useState(true);
     const [systemStatus, setSystemStatus] = useState({ socket: false, ml: false });
+    const [emergency, setEmergency] = useState(null);
     const router = useRouter();
 
     // Auth Protection
@@ -76,6 +78,15 @@ export default function AdminDashboard() {
             setAlerts(prev => [alert, ...prev].slice(0, 20));
         });
 
+        socket.on('emergency_alert', (data) => {
+            setEmergency(data);
+            try {
+                const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/995/995-preview.mp3');
+                audio.play();
+            } catch (e) { }
+            setTimeout(() => setEmergency(null), 10000);
+        });
+
         // Check ML API
         fetch('http://localhost:8000/')
             .then(res => res.json())
@@ -106,8 +117,36 @@ export default function AdminDashboard() {
     const avgSpeed = buses.length > 0 ? (buses.reduce((sum, b) => sum + b.speed, 0) / buses.length).toFixed(1) : 0;
     const routePath = HYD_STOPS.map(s => [s.lat, s.lon]);
 
+    const peakHourData = [
+        { hour: '08:00', demand: 45 },
+        { hour: '09:00', demand: 80 },
+        { hour: '10:00', demand: 60 },
+        { hour: '17:00', demand: 95 },
+        { hour: '18:00', demand: 120 },
+    ];
+
     return (
-        <main style={{ padding: '30px 40px', maxWidth: 1600, margin: '0 auto' }}>
+        <main style={{
+            padding: '30px 40px',
+            maxWidth: 1600,
+            margin: '0 auto',
+            background: emergency ? 'rgba(255, 0, 0, 0.1)' : 'transparent',
+            transition: 'background 0.3s'
+        }}>
+            {emergency && (
+                <div style={{
+                    position: 'fixed', top: 20, left: '50%', transform: 'translateX(-50%)',
+                    zIndex: 9999, background: '#ff1155', color: 'white', padding: '15px 30px',
+                    borderRadius: 12, boxShadow: '0 0 30px rgba(255,17,85,0.5)',
+                    display: 'flex', alignItems: 'center', gap: 15
+                }}>
+                    <span style={{ fontSize: 24 }}>🚨</span>
+                    <div>
+                        <div style={{ fontWeight: 'bold' }}>PANIC SIGNAL</div>
+                        <div style={{ fontSize: 12 }}>{emergency.userId} at {emergency.location}</div>
+                    </div>
+                </div>
+            )}
 
             {/* Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 30 }}>
@@ -202,9 +241,10 @@ export default function AdminDashboard() {
                     </div>
 
                     {/* Map + Recent Activity */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 20 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 20, marginBottom: 30 }}>
                         <div className="glass-panel" style={{ height: 450, padding: 0, overflow: 'hidden' }}>
                             <LeafletMap
+                                key="admin-overview-map"
                                 stops={HYD_STOPS}
                                 buses={buses}
                                 selectedStop={null}
@@ -229,6 +269,21 @@ export default function AdminDashboard() {
                                     </div>
                                 </div>
                             ))}
+                        </div>
+                    </div>
+
+                    <div className="glass-panel">
+                        <h3 style={{ marginBottom: 20 }}>📈 Peak Demand Analytics</h3>
+                        <div style={{ height: 300 }}>
+                            <ResponsiveContainer width="100%" height="100%">
+                                <AreaChart data={peakHourData}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#333" />
+                                    <XAxis dataKey="hour" stroke="#666" />
+                                    <YAxis stroke="#666" />
+                                    <Tooltip contentStyle={{ background: '#111', border: '1px solid #333' }} />
+                                    <Area type="monotone" dataKey="demand" stroke="var(--accent-primary)" fill="var(--accent-primary)" fillOpacity={0.2} />
+                                </AreaChart>
+                            </ResponsiveContainer>
                         </div>
                     </div>
                 </>

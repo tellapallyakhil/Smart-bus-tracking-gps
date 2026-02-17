@@ -1,5 +1,5 @@
 "use client";
-import { useEffect } from 'react';
+import { useEffect, useId } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -40,11 +40,13 @@ function MapUpdater({ center }) {
 }
 
 export default function LeafletMap({ stops, buses, selectedStop, routePath }) {
+    const mapId = useId();
     // Center map on selected stop or default
     const center = selectedStop ? [selectedStop.lat, selectedStop.lon] : [17.3850, 78.4867];
 
     return (
         <MapContainer
+            id={mapId}
             center={center}
             zoom={13}
             style={{ height: '100%', width: '100%', background: 'transparent' }}
