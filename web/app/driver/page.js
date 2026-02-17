@@ -69,7 +69,7 @@ export default function DriverApp() {
     // Reactive update for manual mode
     useEffect(() => {
         if (isTracking && manualMode) {
-            updateLocation(manualLat, manualLon, 40);
+            updateLocation(manualLat, manualLon, 16.67);
         }
     }, [manualLat, manualLon, occupancy, isTracking, manualMode]);
 
@@ -135,7 +135,7 @@ export default function DriverApp() {
                     setStatus("GPS Error");
                 }, { enableHighAccuracy: true });
             } else {
-                updateLocation(manualLat, manualLon, 30);
+                updateLocation(manualLat, manualLon, 16.67);
             }
         }
     };
@@ -151,7 +151,7 @@ export default function DriverApp() {
 
     const handleManualUpdate = () => {
         if (isTracking && manualMode) {
-            updateLocation(parseFloat(manualLat), parseFloat(manualLon), 40);
+            updateLocation(parseFloat(manualLat), parseFloat(manualLon), 16.67);
             alert("Location Update Sent!");
         }
     };
